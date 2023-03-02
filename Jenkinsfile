@@ -2,19 +2,21 @@ pipeline {
     agent any
 
     stages {
-        stage ('Build') {
+        stage('Build') {
             steps {
-                sh '''echo "This is Build Stage"'''
+                sh '''
+                    sudo yum update -y
+                    sudo yum install httpd -y
+                    sudo systemctl start httpd
+                    sudo systemctl enable httpd
+                '''
             }
         }
-        stage ('Test') {
+        stage('Deploy') {
             steps {
-                sh '''echo "This is Test Stage"'''
-            }
-        }
-        stage ('Deploy') {
-            steps {
-                sh '''sudo sh ./script1.sh'''
+                sh '''
+                    sudo cp -R . /var/www/html/
+                '''
             }
         }
     }
