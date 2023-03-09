@@ -1,0 +1,47 @@
+---
+- hosts: all
+  user: ansible
+  become: yes
+  tasks:
+    - name: "Installing Docker Prerequisite packages"
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+        - python3
+    - name: "Installing docker-py"     
+      pip:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - docker-py  
+    - name: "Configuring docker-ce repo"
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: 0644
+    - name: " Installing Docker latest version"
+      yum:
+        name: docker-ce
+        state: present
+    - name: " Starting and Enabling Docker service"
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: "Pull Docker image"
+      docker_image:
+        name: httpd
+        tag: latest
+        source: pull    
+    - name: "Run Docker container"
+      docker_container:
+        name: webserver
+        image: httpd
+        state: started
+        ports:
+          - "8080:80"     
