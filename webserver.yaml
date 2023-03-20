@@ -1,0 +1,42 @@
+---
+- name: Install Docker and create a web server container
+  hosts: all
+  become: true
+
+  tasks:
+  - name: Install prerequisite packages
+    yum:
+      name:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      state: present
+
+  - name: Add Docker repository
+    yum_repository:
+      name: docker-ce
+      description: Docker CE Stable - $basearch
+      baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+      enabled: true
+      gpgcheck: true
+      gpgkey: https://download.docker.com/linux/centos/gpg
+      sslverify: true
+
+  - name: Install Docker
+    yum:
+      name: docker-ce
+      state: present
+
+  - name: Start Docker service
+    service:
+      name: docker
+      state: started
+
+  - name: Create web server container
+    docker_container:
+      name: my_web_server
+      image: nginx
+      ports:
+        - "8080:80"
+      state: started
+
